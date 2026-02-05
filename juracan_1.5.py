@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-# JURACAN 1.0 by teehay
+# JURACAN 1.5 by teehay
 
 # A Python(3) script that uses Firefox (or Chrome) and Selenium to search the Hurricane Electric Internet Services website for a keyword and output
 # or store the results. Please do not abuse the service by spamming requests.
+
+#!!!!!! Currently not functional because of changes in the EIS result HTML. Can easily be fixed by bringing to date all instances of code that refer to the old HTML. !!!!!!
 
 from selenium.webdriver import Firefox, Chrome
 from selenium.webdriver.common.by import By
@@ -21,31 +23,48 @@ import sqlite3
 import subprocess
 
 if __name__ == "__main__":
-
     ## Handle args
     parser = argparse.ArgumentParser(description='Gets ASN and ISP addresses related to the target keyword from the Hurricane Electric Internet Services website. Please do not abuse this service!')
+
+    ## Add trgt keyword argument
     parser.add_argument('keyword', metavar='keyword', type=str, nargs='?', help='target keyword')
+
+    ## Adds the function of storing results in SQLite
     parser.add_argument('-s', '--sqlite',  metavar=('dbpath', 'tablename'), \
     nargs=2, help="store results in a SQLite database; creates a new database and table if they don't already exist")
+
+    ## Adds the function of storing results in MySQL
     parser.add_argument('-m', '--mysql',  metavar=('host', 'dbname', 'tblname', 'user', 'password'),\
     nargs=5, help="store results in a MySQL database; creates a new database and table if they don't exist" )
+
+    ## Add the ability to output table data as a CSV list
     parser.add_argument('-c', '--csv', action='store_true', \
     help="output table data as a CSV list")
+
+    ## Allows output of the result column and format
     parser.add_argument('-r', '--result', action='store_true', \
     help="output the result column data only; if --csv is on, result column data is output as a CSV list")
+
+    ## Specifies location path of driver executable used
     parser.add_argument('-e', '--exec', metavar='path', type=str, nargs='?', \
     help="specify the location path to the driver executable that will be used; checks system path by default")
+
+    ## Specifies location path of browser binary
     parser.add_argument('-b', '--binary', metavar='path', type=str, nargs='?', \
     help="specify the location path to the browser binary that will be used; checks common locations by default")
+
+    ## Specifies browser driver for search (chrome or gecko)
     parser.add_argument('-d', '--driver', metavar='initial', type=str, nargs='?', default='g', const='g',\
     help="specify the browser driver that will be used in the search; options: c[hrome], g[ecko]; default: g")
+
+    ## "quiet" mode - no screen output
     parser.add_argument('-q', '--quiet', action='store_true', \
     help="run script with no screen output")
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2:   ## If no args other than arg[0] exist, print usage menu and exit program:
         parser.print_usage()
         sys.exit(1)
-    else:
+    else: ## Parse args:
         arg = parser.parse_args()
 
     ## Get OS path in list form
@@ -53,29 +72,29 @@ if __name__ == "__main__":
 
     ## Handle browser option
     if arg.driver == 'g': # Gecko (Firefox)
-        options = firefox_options()
-        options.add_argument('--headless')
+        options = firefox_options() # Call firefox config options
+        options.add_argument('--headless') # Browser will fire in headless mode
 
-        if arg.binary:
+        if arg.binary:  # If binary location is specified, add it to the config options
             options.binary_location = arg.binary
 
-        if arg.exec:
+        if arg.exec: # If executable path is specified in arg.exec, add them to driver configurations for Firefox and instantiate the driver.
             driver = Firefox(executable_path=arg.exec, options=options)
-        else:
+        else:  # Otherwise, proceed with only the options for Firefox.
             driver = Firefox(options=options)
 
     elif arg.driver == 'c': # Chrome
-        options = chrome_options()
-        options.add_argument('--headless')
+        options = chrome_options() # As above, but for Chrome (line 73)
+        options.add_argument('--headless') # As above, but for chrome (line 74)
         options.add_argument('--no-sandbox') # Allows use as root, use at own risk!
 
         if arg.binary:
-            options.binary_location = arg.binary
+            options.binary_location = arg.binary  #(line 77 for Chrome)
 
-        if arg.exec:
-            driver = Chrome(executable_path=arg.exec, options=options)
-        else:
-            driver = Chrome(options=options)
+        if arg.exec: # (line 79)
+            driver = Chrome(executable_path=arg.exec, options=options) # (line 80)
+        else: # (line 81)
+            driver = Chrome(options=options)  # (line 82)
 
     ## Navigate to site
     driver.get('https://bgp.he.net')
@@ -142,7 +161,6 @@ if __name__ == "__main__":
                 print(f"{res:<44}{desc:<48}{country:<16}")
 
             ## Handle database insertion
-            #  TO DO: Make function to handle
             if arg.sqlite:
                 if arg.result and not arg.csv:
                     c.execute("INSERT INTO " + arg.sqlite[1] + " (result) VALUES (?)", (res,))
