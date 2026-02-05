@@ -1,11 +1,13 @@
 # juracan
-usage: juracan_1.0.py [-h] [-s dbpath tablename]
+usage: juracan_1.5.py [-h] [-s dbpath tablename]
                       [-m host dbname tblname user password] [-c] [-r]
                       [-e [path]] [-b [path]] [-d [initial]] [-q]
                       [keyword]
 
 Gets ASN and ISP addresses related to the target keyword from the Hurricane
 Electric Internet Services website. Please do not abuse this service!
+
+!!! Currently not functional because of changes in the HTML of the target database results, easily fixed by changing all references to the old structure. !!!
 
 positional arguments:
   keyword               target keyword
